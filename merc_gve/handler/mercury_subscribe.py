@@ -15,10 +15,10 @@ from merc_gve.services.telegram.task import add_task_by_minutes, get_user_tasks
 from merc_gve.services.telegram.states import CreateTaskState
 
 
-__all__ = ['register_handlers_chcked_mercury']
+__all__ = ['register_handlers_checked_mercury']
 
 
-def register_handlers_chcked_mercury(dispatcher: Dispatcher):
+def register_handlers_checked_mercury(dispatcher: Dispatcher):
     # одиночный вызов
     dispatcher.register_message_handler(send_checked_mercury_notified, Text(equals="проверить", ignore_case=True))
 

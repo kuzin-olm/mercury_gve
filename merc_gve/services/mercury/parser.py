@@ -250,10 +250,13 @@ class VetRF:
 
         return enterprise_requests
 
-    def run_parse_vetdocument(self, date_begin, date_end, filter_by_fio: list) -> Optional[list]:
+    def run_parse_vetdocument(self, date_begin, date_end, filter_by_fio: list) -> list:
 
         if not self.is_authenticate:
             raise ValueError("Не авторизованно.")
+
+        if len(filter_by_fio) == 0:
+            raise ValueError("Фильтр по ФИО не может быть пустым.")
 
         result_parse = []
 
@@ -266,7 +269,7 @@ class VetRF:
 
         size_enterprise_list = len(enterprise_list)
         if size_enterprise_list == 0:
-            return None
+            return result_parse
 
         # для каждого предприятия
         for num, enterprise in enumerate(enterprise_list, start=1):
