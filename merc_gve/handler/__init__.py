@@ -1,2 +1,3 @@
 from .command import register_handlers_command
-from .mercury_subscribe import register_handlers_chcked_mercury
+from .mercury_subscribe import register_handlers_checked_mercury
+from .mercury_vetdoc import register_handlers_vetdoc_mercury

@@ -9,16 +9,16 @@ from aiogram.dispatcher.filters import Text
 from merc_gve.settings import logger, MERCURY_LOGIN, MERCURY_PASSWORD
 from merc_gve.dto import User
 from merc_gve.types import NotificationType
-from merc_gve.services.mercury.parser import VetRF
+from merc_gve.services.mercury.aioparser import VetRF
 from merc_gve.services.telegram.message_maker import make_answer_by_enterprises
 from merc_gve.services.telegram.task import add_task_by_minutes, get_user_tasks
 from merc_gve.services.telegram.states import CreateTaskState
 
 
-__all__ = ['register_handlers_chcked_mercury']
+__all__ = ['register_handlers_checked_mercury']
 
 
-def register_handlers_chcked_mercury(dispatcher: Dispatcher):
+def register_handlers_checked_mercury(dispatcher: Dispatcher):
     # одиночный вызов
     dispatcher.register_message_handler(send_checked_mercury_notified, Text(equals="проверить", ignore_case=True))
 
@@ -37,16 +37,20 @@ def register_handlers_chcked_mercury(dispatcher: Dispatcher):
 
 
 async def send_checked_mercury_notified(message: types.Message, is_schedule: bool = False):
+    if get_user_tasks(user_id=message.from_user.id) and not is_schedule:
+        await message.answer("есть отложенная задача, сначала надо остановить ее")
+        return
+
     enterprises = []
 
     user = User(login=MERCURY_LOGIN, password=MERCURY_PASSWORD)
     mercury_gve = VetRF()
 
-    is_auth = mercury_gve.authenticate_by_login(login=user.login, password=user.password)
+    is_auth = await mercury_gve.authenticate_by_login(login=user.login, password=user.password)
 
     if is_auth:
         try:
-            enterprises = mercury_gve.get_notify_enterprises(
+            enterprises = await mercury_gve.get_notify_enterprises(
                 parents=['ООО "Русь"'],
                 types=[NotificationType.HS],
             )
@@ -76,13 +80,15 @@ async def send_checked_mercury_notified(message: types.Message, is_schedule: boo
             parse_mode=types.ParseMode.HTML,
         )
 
+    await mercury_gve.close()
+
 
 async def create_schedule_task(message: types.Message):
     user_tasks = get_user_tasks(user_id=message.from_user.id)
 
     if user_tasks:
-        logger.debug(f"{message.from_user.id} уже есть в евент залупе")
-        await message.answer("уже запущено")
+        logger.debug(f"{message.from_user.id} уже есть в евент лупе")
+        await message.answer("есть отложенная задача, сначала надо остановить ее")
 
     else:
         keyboard_markup = types.InlineKeyboardMarkup(row_width=3)
@@ -131,7 +137,11 @@ async def choose_period_schedule_task_callback_handler(query: types.CallbackQuer
 
     try:
         period = int(answer_data)
-        await add_task_by_minutes(period_minutes=period, func=send_checked_mercury_notified, params=[query, True])
+        await add_task_by_minutes(
+            period_minutes=period,
+            func=send_checked_mercury_notified,
+            params=[query.message, True]
+        )
 
         text = f"запущено с периодичностью: {period} минут"
         await query.answer(text)
@@ -149,8 +159,21 @@ async def cancel_schedule_task(message: types.Message):
     user_tasks = get_user_tasks(user_id=message.from_user.id)
 
     if user_tasks:
-        [aioschedule.jobs.remove(_task) for _task in user_tasks]
-        await message.answer("остановлено")
+
+        qty_tasks = len(user_tasks)
+        tasks_should_stopped = [_task for _task in user_tasks if not _task.is_run]
+        qty_pending_tasks = len(tasks_should_stopped)
+
+        logger.debug(f"Всего тасок: {qty_tasks}, В ожидании тасок (могут быть остановлены): {qty_pending_tasks}")
+
+        answer = "остановлено"
+        if qty_tasks > qty_pending_tasks:
+            dont_stopped = qty_tasks - qty_pending_tasks
+            stopped = qty_tasks - dont_stopped
+            answer = f"{stopped} остановленно \n{dont_stopped} не может быть остановленно, т.к. выполняется"
+
+        [aioschedule.default_scheduler.jobs.remove(_task) for _task in tasks_should_stopped]
+        await message.answer(answer)
 
     else:
         logger.debug(f"нет такой таски: {message.from_user.id}")

@@ -4,12 +4,17 @@ from aiogram import Bot, Dispatcher, executor
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
 from merc_gve.services.telegram.task import run_schedule_handler
-from merc_gve.handler import register_handlers_command, register_handlers_chcked_mercury
+from merc_gve.handler import (
+    register_handlers_command,
+    register_handlers_checked_mercury,
+    register_handlers_vetdoc_mercury,
+)
 
 
 def setup_handlers(dispatcher: Dispatcher):
     register_handlers_command(dispatcher)
-    register_handlers_chcked_mercury(dispatcher)
+    register_handlers_checked_mercury(dispatcher)
+    register_handlers_vetdoc_mercury(dispatcher)
 
 
 def main():
