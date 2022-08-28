@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import json
+from uuid import uuid4
 from typing import Optional, List
 
 import aiohttp
@@ -120,13 +121,13 @@ class VetRF:
         form_data["j_username"] = login
         form_data["j_password"] = password
         form_data["_eventId_proceed"] = ""
-        form_data["ksid"] = "lolkek"
+        form_data["ksid"] = str(uuid4())
 
         # запрос к системе авторизации по специальной ссылке с данными для авторизации
         logger.debug("запрос к системе авторизации")
         async with self.session.post(f"https://idp.vetrf.ru{form['action']}", data=form_data) as resp:
             content = await resp.text()
-
+        print(content)
         # теперь у нас должен появиться SAMLResponse (который мы поставим вместо SAMLRequest)
         soup = BSoup(content, "html5lib")
         form = soup.find("form")
@@ -307,7 +308,6 @@ class VetRF:
             except (ValueError, AttributeError) as err:
                 logger.error(enterprise)
                 logger.error(err)
-            break
 
         # для уточнения по номерам вет.док, чтобы узнать какой конкретно он формы
         # встаем на любое (конкретно тут первое) предприятие, чтобы можно было юзать форму Меркурия

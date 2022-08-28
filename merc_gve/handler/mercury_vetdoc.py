@@ -5,6 +5,7 @@ from aiogram import types, Dispatcher
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
 
+from merc_gve.services.telegram.task import get_user_tasks
 from merc_gve.settings import logger, MERCURY_LOGIN, MERCURY_PASSWORD
 from merc_gve.dto import User
 from merc_gve.services.mercury.aioparser import VetRF
@@ -26,11 +27,16 @@ def register_handlers_vetdoc_mercury(dispatcher: Dispatcher):
 
 
 async def start_quiz_preparse(message: types.Message):
-    await message.answer(
-        text="укажи с какой даты начать, н-р, 19.09.2009",
-        reply_markup=get_cancel_inlinekeyboard(),
-    )
-    await VetdocPreParseState.filter_date_start.set()
+    user_tasks = get_user_tasks(user_id=message.from_user.id)
+    if user_tasks:
+        logger.debug(f"{message.from_user.id} уже есть в евент лупе")
+        await message.answer("есть отложенная задача, сначала надо остановить ее")
+    else:
+        await message.answer(
+            text="укажи с какой даты начать, н-р, 19.09.2009",
+            reply_markup=get_cancel_inlinekeyboard(),
+        )
+        await VetdocPreParseState.filter_date_start.set()
 
 
 async def date_validate(message: types.Message, state: FSMContext):
@@ -80,7 +86,7 @@ async def fio_validate(message: types.Message, state: FSMContext):
         # todo: в шедул завернуть - один хер - блокирует обычный реквест
         #       уйти на aiohttp ?
         # await run_parse_mercury_vet_doc(message=message, user_data=user_data)
-        aioschedule.every().seconds.do(run_parse_mercury_vet_doc, message, user_data)
+        aioschedule.default_scheduler.every().seconds.do(run_parse_mercury_vet_doc, message, user_data)
     else:
         text = "неправильно введены ФИО, н-р, список: \nфамилия имя отчество, фамилия имя отчество"
         await message.answer(text, reply_markup=get_cancel_inlinekeyboard())
