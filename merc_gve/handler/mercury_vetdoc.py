@@ -86,10 +86,8 @@ async def fio_validate(message: types.Message, state: FSMContext):
         await state.finish()
 
         await message.answer("принял фио")
-        # todo: в шедул завернуть - один хер - блокирует обычный реквест
-        #       уйти на aiohttp ?
-        # await run_parse_mercury_vet_doc(message=message, user_data=user_data)
         aioschedule.default_scheduler.every().seconds.do(run_parse_mercury_vet_doc, message, user_data)
+
     else:
         text = "неправильно введены ФИО, н-р, список: \nфамилия имя отчество, фамилия имя отчество"
         await message.answer(text, reply_markup=get_cancel_inlinekeyboard())
