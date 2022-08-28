@@ -42,7 +42,7 @@ class CustomScheduler(aioschedule.Scheduler):
 
 async def add_task_by_minutes(period_minutes: int, func: callable, params: list = None):
     params = params or []
-    aioschedule.default_scheduler.every(period_minutes).seconds.do(func, *params)
+    aioschedule.default_scheduler.every(period_minutes).minutes.do(func, *params)
 
 
 def get_user_tasks(user_id: int) -> List[CustomJob]:

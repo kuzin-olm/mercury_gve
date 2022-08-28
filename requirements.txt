@@ -11,6 +11,9 @@ bs4==0.0.1
 certifi==2022.6.15; python_version >= "3.7" and python_version < "4"
 charset-normalizer==2.1.1; python_version >= "3.7" and python_version < "4" and python_full_version >= "3.6.0"
 colorama==0.4.5; python_version >= "3.5" and python_full_version < "3.0.0" and sys_platform == "win32" or sys_platform == "win32" and python_version >= "3.5" and python_full_version >= "3.5.0"
+et-xmlfile==1.1.0; python_version >= "3.6" \
+    --hash=sha256:a2ba85d1d6a74ef63837eed693bcb89c3f752169b0e3e7ae5b16ca5e1b3deada \
+    --hash=sha256:8eb9e2bc2f8c97e37a2dc85a09ecdcdec9d8a396530a6d5a33b30b9a92da0c5c
 frozenlist==1.3.1; python_version >= "3.7"
 html5lib==1.1; (python_version >= "2.7" and python_full_version < "3.0.0") or (python_full_version >= "3.5.0")
 idna==3.3; python_version >= "3.7" and python_version < "4"
@@ -116,6 +119,9 @@ numpy==1.23.2; python_version >= "3.10" \
     --hash=sha256:2bd879d3ca4b6f39b7770829f73278b7c5e248c91d538aab1e506c628353e47f \
     --hash=sha256:be6b350dfbc7f708d9d853663772a9310783ea58f6035eec649fb9c4371b5389 \
     --hash=sha256:b78d00e48261fbbd04aa0d7427cf78d18401ee0abd89c7559bbf422e5b1c7d01
+openpyxl==3.0.10; python_version >= "3.6" \
+    --hash=sha256:0ab6d25d01799f97a9464630abacbb34aafecdcaa0ef3cba6d6b3499867d0355 \
+    --hash=sha256:e47805627aebcf860edb4edf7987b1309c1b3632f3750538ed962bbcc3bd7449
 pandas==1.4.3; python_version >= "3.8" \
     --hash=sha256:d51674ed8e2551ef7773820ef5dab9322be0828629f2cbf8d1fc31a0c4fed640 \
     --hash=sha256:16ad23db55efcc93fa878f7837267973b61ea85d244fc5ff0ccbcfa5638706c5 \

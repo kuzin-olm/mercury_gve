@@ -1,3 +1,5 @@
+import gzip
+from io import BytesIO
 import re
 import aioschedule
 
@@ -5,6 +7,7 @@ from aiogram import types, Dispatcher
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
 
+from merc_gve.services.mercury import my_excel
 from merc_gve.services.telegram.task import get_user_tasks
 from merc_gve.settings import logger, MERCURY_LOGIN, MERCURY_PASSWORD
 from merc_gve.dto import User
@@ -114,7 +117,24 @@ async def run_parse_mercury_vet_doc(message: types.Message, user_data: dict):
                 date_end=user_data["date_end"],
                 filter_by_fio=user_data["fio"],
             )
-            text_message = str(vet_documents[:1])
+
+            if vet_documents:
+                output_file = BytesIO()
+                result_df, quantity_docs = my_excel.counter_docs(list_vet_doc=vet_documents)
+                result_df.to_excel(output_file, float_format='%i')
+                output_file.seek(0, 0)
+
+                text_message = f"всего вет.номеров: {quantity_docs}"
+                await message.bot.send_document(
+                    chat_id=message.from_user.id,
+                    document=types.InputFile(
+                        path_or_bytesio=output_file,
+                        filename=f"vetrf_{message.from_user.id}.xlsx",
+                    ),
+                )
+            else:
+                text_message = "Вет номеров не найдено"
+
         except ValueError as err:
             text_message = str(err)
             logger.error(err)
