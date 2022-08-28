@@ -22,7 +22,7 @@ REGEX_DATE = r"^(0?[1-9]|[12][0-9]|3[01])[.](0?[1-9]|1[012])[.]\d{4}$"
 
 
 def register_handlers_vetdoc_mercury(dispatcher: Dispatcher):
-    dispatcher.register_message_handler(start_quiz_preparse, Text(equals="quiz", ignore_case=True))
+    dispatcher.register_message_handler(start_quiz_preparse, commands=["vetrf"])
     dispatcher.register_message_handler(date_validate, state=VetdocPreParseState.filter_date_start)
     dispatcher.register_message_handler(date_validate, state=VetdocPreParseState.filter_date_end)
     dispatcher.register_message_handler(fio_validate, state=VetdocPreParseState.filter_fio)
