@@ -131,7 +131,11 @@ async def choose_period_schedule_task_callback_handler(query: types.CallbackQuer
 
     try:
         period = int(answer_data)
-        await add_task_by_minutes(period_minutes=period, func=send_checked_mercury_notified, params=[query, True])
+        await add_task_by_minutes(
+            period_minutes=period,
+            func=send_checked_mercury_notified,
+            params=[query.message, True]
+        )
 
         text = f"запущено с периодичностью: {period} минут"
         await query.answer(text)
@@ -149,7 +153,7 @@ async def cancel_schedule_task(message: types.Message):
     user_tasks = get_user_tasks(user_id=message.from_user.id)
 
     if user_tasks:
-        [aioschedule.jobs.remove(_task) for _task in user_tasks]
+        [aioschedule.default_scheduler.jobs.remove(_task) for _task in user_tasks]
         await message.answer("остановлено")
 
     else:

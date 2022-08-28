@@ -7,7 +7,7 @@ from aiogram.dispatcher.filters import Text
 
 from merc_gve.settings import logger, MERCURY_LOGIN, MERCURY_PASSWORD
 from merc_gve.dto import User
-from merc_gve.services.mercury.parser import VetRF
+from merc_gve.services.mercury.aioparser import VetRF
 from merc_gve.services.telegram.states import VetdocPreParseState
 
 
@@ -35,8 +35,7 @@ async def start_quiz_preparse(message: types.Message):
 
 async def date_validate(message: types.Message, state: FSMContext):
     date = message.text.strip()
-    user_data = await state.get_data()
-    print(user_data)
+
     if re.search(REGEX_DATE, date):
         current_state = await state.get_state()
 
@@ -68,8 +67,7 @@ async def fio_validate(message: types.Message, state: FSMContext):
         for _fio in fio
     ]
 
-    print(fio)
-    print(cleared_fio)
+    logger.debug(f"сырые: {fio}, обработанные: {cleared_fio}")
 
     fio_is_valid = all([len(_fio.split()) == 3 for _fio in cleared_fio])
     if fio_is_valid:
@@ -81,9 +79,8 @@ async def fio_validate(message: types.Message, state: FSMContext):
         await message.answer("принял фио")
         # todo: в шедул завернуть - один хер - блокирует обычный реквест
         #       уйти на aiohttp ?
-        await run_parse_mercury_vet_doc(message=message, user_data=user_data)
-        # aioschedule.every(3).seconds.do(run_parse_mercury_vet_doc, message, user_data)
-
+        # await run_parse_mercury_vet_doc(message=message, user_data=user_data)
+        aioschedule.every().seconds.do(run_parse_mercury_vet_doc, message, user_data)
     else:
         text = "неправильно введены ФИО, н-р, список: \nфамилия имя отчество, фамилия имя отчество"
         await message.answer(text, reply_markup=get_cancel_inlinekeyboard())
@@ -101,12 +98,12 @@ async def run_parse_mercury_vet_doc(message: types.Message, user_data: dict):
     user = User(login=MERCURY_LOGIN, password=MERCURY_PASSWORD)
     mercury_gve = VetRF()
 
-    is_auth = mercury_gve.authenticate_by_login(login=user.login, password=user.password)
+    is_auth = await mercury_gve.authenticate_by_login(login=user.login, password=user.password)
 
     if is_auth:
         try:
             await message.answer(text="начинаю собирать")
-            vet_documents = mercury_gve.run_parse_vetdocument(
+            vet_documents = await mercury_gve.run_parse_vetdocument(
                 date_begin=user_data["date_start"],
                 date_end=user_data["date_end"],
                 filter_by_fio=user_data["fio"],
@@ -123,6 +120,9 @@ async def run_parse_mercury_vet_doc(message: types.Message, user_data: dict):
 
     else:
         await message.answer(text="не удалось авторизоваться")
+
+    await mercury_gve.close()
+    return aioschedule.CancelJob
 
 
 def get_cancel_inlinekeyboard(text: str = "отмена") -> types.InlineKeyboardMarkup:
