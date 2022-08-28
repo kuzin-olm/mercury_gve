@@ -13,8 +13,12 @@ async def add_task_by_minutes(period_minutes: int, func: callable, params: list 
 def get_user_tasks(user_id: int) -> List[aioschedule.Job]:
 
     jobs: List[aioschedule.Job] = aioschedule.jobs
-
-    jobs = [job for job in jobs if job.job_func.args[0]["from"]["id"] == user_id]
+    logger.debug(jobs)
+    jobs = [
+        job
+        for job in jobs
+        if job.job_func.args[0]["from"]["id"] == user_id or job.job_func.args[0]["chat"]["id"] == user_id
+    ]
     try:
         logger.debug(jobs[0].job_func.args[0]["from"]["id"])
         logger.debug(dir(jobs[0]))
