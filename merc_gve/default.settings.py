@@ -2,16 +2,13 @@
 from pathlib import Path
 from loguru import logger
 
-
 API_TG_BOT = "api_token"
 MERCURY_LOGIN = "login"
 MERCURY_PASSWORD = "pass"
 
-
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 PATH_COOKIES = str(BASE_DIR / "cookies.json")
-
 
 # для частичного разбиения
 EXTRA_ENTERPRISE_LIST = {  # производственная площадка id
@@ -32,3 +29,9 @@ EXTRA_ENTERPRISE_LIST = {  # производственная площадка i
     #     340823: 'ОБЩЕСТВО С ОГРАНИЧЕННОЙ ОТВЕТСТВЕННОСТЬЮ "ЧАЙКОВСКАЯ ПТФ-3" (Российская Федерация, Пермский край), ИНН: 5903089190',
     # }
 }
+
+CARS = ['А000АА222RUS']
+
+TRAILERS = ['АА000022RUS']
+
+DELIVERY_CAR_NUMBERS = CARS + TRAILERS
