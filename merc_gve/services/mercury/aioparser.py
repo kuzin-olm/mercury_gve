@@ -127,7 +127,7 @@ class VetRF:
         logger.debug("запрос к системе авторизации")
         async with self.session.post(f"https://idp.vetrf.ru{form['action']}", data=form_data) as resp:
             content = await resp.text()
-        print(content)
+
         # теперь у нас должен появиться SAMLResponse (который мы поставим вместо SAMLRequest)
         soup = BSoup(content, "html5lib")
         form = soup.find("form")
@@ -257,7 +257,7 @@ class VetRF:
             info_editable = [value.string for value in info_editable]
 
             # полезные данные
-            enterprise_request.car_number = info_editable[5]
+            enterprise_request.delivery_transport = info_editable[5]
             enterprise_request.type_product = info_editable[6]
 
             info_recipient = transaction_extra_info[3]

@@ -3,6 +3,7 @@ from typing import List
 from dataclasses import dataclass, field
 
 from merc_gve.types import NotificationType
+from merc_gve.services.mercury.state_number_parser import search_state_number
 
 
 CAR_RUS_MINI_REGEX = r"(?i)^[АВЕКМНОРСТУХ]\d{3}(?<!000)[АВЕКМНОРСТУХ]{2}$"
@@ -15,6 +16,12 @@ TRAILERS_RUS_FULL_REGEX = r"(?i)^[АВЕКМНОРСТУХ]{2}\d{4}(?<!0000) *\d
 class User:
     login: str
     password: str
+
+
+@dataclass
+class VerifiedValue:
+    value: str
+    is_verified: bool = False
 
 
 @dataclass(frozen=True)
@@ -45,8 +52,7 @@ class EnterpriseNotificationDTO:
 class EnterpriseRequestDTO:
     pk: int
     type: str = None
-    _car_number: str = None
-    _verified_car_number: str = None
+    _delivery_transport: str = None
     product: str = None
     product_mass: str = None
     type_product: str = None
@@ -55,31 +61,32 @@ class EnterpriseRequestDTO:
     recipient_ttn_number: str = None
     recipient_ttn_date: str = None
 
-    @property
-    def car_number(self):
-        return self._car_number
+    car_state_number: VerifiedValue = None
+    trailer_state_number: VerifiedValue = None
 
     @property
-    def verified_car_number(self):
-        return self._verified_car_number
+    def delivery_transport(self):
+        return self._delivery_transport
 
-    @car_number.setter
-    def car_number(self, val: str):
+    @delivery_transport.setter
+    def delivery_transport(self, val: str):
         if not isinstance(val, str):
             raise ValueError('Value must be a string')
-        self._car_number = val
+        self._delivery_transport = val
 
         numbers = [number.strip() for number in val.split("/")]
-        verified = []
-        for number in numbers:
-            match = any(map(
-                lambda regex: re.search(regex, number),
-                [CAR_RUS_FULL_REGEX, TRAILERS_RUS_FULL_REGEX, CAR_RUS_MINI_REGEX, TRAILERS_RUS_MINI_REGEX]
-            ))
-            if match:
-                verified.append(number)
 
-        self._verified_car_number = " / ".join(verified)
+        if len(numbers) > 0:
+            self.car_state_number = VerifiedValue(value=numbers[0])
+
+            if car := search_state_number(numbers[0]):
+                self.car_state_number = VerifiedValue(value=car, is_verified=True)
+
+        if len(numbers) > 1:
+            self.trailer_state_number = VerifiedValue(value=numbers[1])
+
+            if trailer := search_state_number(numbers[1]):
+                self.trailer_state_number = VerifiedValue(value=trailer, is_verified=True)
 
 
 @dataclass

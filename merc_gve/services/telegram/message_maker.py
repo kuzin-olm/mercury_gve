@@ -29,9 +29,15 @@ def make_answer_by_enterprises(enterprises: List[EnterpriseDTO]) -> List[str]:
                             f"Фирма: {request.recipient_prod}\n"
                             f"Продукт: {request.product}({request.product_mass})\n"
                             f"Тип продукта: {request.type_product}\n"
-                            f"Машина: {request.car_number}\n"
-                            f"Машина (проверенные): {request.verified_car_number}\n"
+                            f"Транспорт доставки: {request.delivery_transport}\n"
                         )
+                        if request.car_state_number:
+                            status = make_emoji_status(request.car_state_number.is_verified)
+                            request_str += f"{status}Машина: {request.car_state_number.value}\n"
+
+                        if request.trailer_state_number:
+                            status = make_emoji_status(request.trailer_state_number.is_verified)
+                            request_str += f"{status}Прицеп: {request.trailer_state_number.value}\n"
 
                 text_answer += (
                     f"{enterprise.name}:\n{url}\n"
@@ -69,3 +75,7 @@ def make_html_mercury_url(title, url):
     url = f"https://mercury.vetrf.ru/gve/{url}"
     url = f"<a href='{url}'>{title}</a>"
     return url
+
+
+def make_emoji_status(status: bool) -> str:
+    return "🍚🐈👰‍♀️" if status else "➖💯"
