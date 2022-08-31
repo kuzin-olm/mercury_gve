@@ -18,6 +18,7 @@ def search_state_number(state_number: str, verified_state_numbers: list = DELIVE
 
 
 def _parse_state_number(state_number: str) -> Optional[str]:
+    state_number = state_number.replace(" ", "")
     number = None
 
     try:
@@ -38,6 +39,7 @@ def _parse_state_number(state_number: str) -> Optional[str]:
 
 
 def _parse_state_number_non_re(state_number: str) -> Optional[str]:
+    state_number = state_number.replace(" ", "")
     parsed_state_number = []
     for char in state_number:
         if not char.isdigit() and len(parsed_state_number):
