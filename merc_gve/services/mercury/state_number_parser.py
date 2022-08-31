@@ -22,18 +22,23 @@ def _parse_state_number(state_number: str) -> Optional[str]:
     number = None
 
     try:
-        if regex_car := re.search(r"(?<!\d)(\d{3})(?!\d{2})", state_number):
+        if regex_car := re.search(r"(?<!\d)(\d{3})(?!\d)", state_number):
             start = regex_car.start()
             end = regex_car.end()
-            number = state_number[start - 1:end + 2]
+            if start >= 1:
+                number = state_number[start - 1:end + 2]
 
-        if regex_trailer := re.search(r"(?<!\d{2})(\d{4})", state_number):
+        elif regex_trailer := re.search(r"(?<!\d{2})(\d{4})(!\d)*", state_number):
             start = regex_trailer.start()
             end = regex_trailer.end()
-            number = state_number[start - 2:end]
+            if start >= 2:
+                number = state_number[start - 2:end]
 
     except IndexError as err:
         logger.error(err)
+
+    if number and len(number) < 6:
+        number = None
 
     return number
 
