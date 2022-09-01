@@ -6,10 +6,11 @@ from aiogram import types, Dispatcher
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
 
+from merc_gve.database import User
 from merc_gve.settings import logger, MERCURY_LOGIN, MERCURY_PASSWORD
-from merc_gve.dto import User
+from merc_gve.dto import User as MercuryAuthUser
 from merc_gve.types import NotificationType
-from merc_gve.services.mercury.aioparser import VetRF
+from merc_gve.services.mercury.aioparser_db import MercuryDB
 from merc_gve.services.telegram.message_maker import make_answer_by_enterprises
 from merc_gve.services.telegram.task import add_task_by_minutes, get_user_tasks
 from merc_gve.services.telegram.states import CreateTaskState
@@ -43,10 +44,11 @@ async def send_checked_mercury_notified(message: types.Message, is_schedule: boo
 
     enterprises = []
 
-    user = User(login=MERCURY_LOGIN, password=MERCURY_PASSWORD)
-    mercury_gve = VetRF()
+    telegram_user, _ = User.get_or_create(telegram_id=message.from_user.id)
+    mercury_auth_user = MercuryAuthUser(login=MERCURY_LOGIN, password=MERCURY_PASSWORD)
 
-    is_auth = await mercury_gve.authenticate_by_login(login=user.login, password=user.password)
+    mercury_gve = MercuryDB(telegram_user=telegram_user, auth_user=mercury_auth_user)
+    is_auth = await mercury_gve.authenticate_by_login(login=mercury_auth_user.login, password=mercury_auth_user.password)
 
     if is_auth:
         try:

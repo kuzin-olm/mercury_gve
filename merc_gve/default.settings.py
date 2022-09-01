@@ -10,6 +10,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 PATH_COOKIES = str(BASE_DIR / "cookies.json")
 
+DATABASE_PATH = BASE_DIR / "mercury.db"
+
 # для частичного разбиения
 EXTRA_ENTERPRISE_LIST = {  # производственная площадка id
     259201: {

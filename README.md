@@ -7,6 +7,7 @@ python 3.10
 poetry
 
 - aiogram
+- aiohttp
 - aioschedule
 - beautifulsoup
 

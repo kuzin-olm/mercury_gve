@@ -3,12 +3,17 @@ from settings import API_TG_BOT
 from aiogram import Bot, Dispatcher, executor
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
+from merc_gve.database import database, User, Config
 from merc_gve.services.telegram.task import run_schedule_handler
 from merc_gve.handler import (
     register_handlers_command,
     register_handlers_checked_mercury,
     register_handlers_vetdoc_mercury,
 )
+
+
+def init_db():
+    database.create_tables([User, Config])
 
 
 def setup_handlers(dispatcher: Dispatcher):
@@ -18,6 +23,8 @@ def setup_handlers(dispatcher: Dispatcher):
 
 
 def main():
+    init_db()
+
     bot = Bot(token=API_TG_BOT)
     storage = MemoryStorage()
 
